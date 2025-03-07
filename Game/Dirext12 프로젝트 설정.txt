@@ -1,0 +1,88 @@
+프로젝트 : Windows 데스크톱 애플리케이션
+솔루션 이름 : Game
+프로젝트 이름 : Client
+
+소스 파일 하위 폴더로 Game, Utils폴더 추가
+솔루션의 기본 생성 파일들을 소스 파일 하위 폴더Utils에 모아둠
+
+<Client.cpp>
+1. 루프문 수정 -> 무한루프로 변경, GetMessage()대신 PeeakMessage() 사용
+2. 무한 루프안에 Game의 전반적인 로직을 돌림 ex) Game->Tick()
+3. wcex.IpszMenuName의 값을 nullptr로 변경 (실행 시켰을 때 클라이언트 상단에 파일, 도움말이 제거됨)
+
+<Pre-Compilated>
+: 공용으로 사용될 기능을 가장 먼저 컴파일하여서 필요할때마다 매번 따로 컴파일 하지 않도록 함 (pch.h or stdafx.h)
+1. Client 솔루션 우클릭 -> 속성
+	속성의 상단에 구성 : "모든 구성", 플랫폼 : "모든 플랫폼"으로 설정
+	 좌측 리스트의 구성 속성 -> C/C++ -> 미리 컴파일된 헤더 
+		-> 미리 컴파일된 헤더를 "사용"으로 변경	
+		-> 미리 컴파일된 헤더 파일을 "pch.h"으로 변경(개인 취향)
+2. Utils폴더 우클릭 -> 추가 -> 클래스 -> pch이름으로 생성 -> Utils폴더로 옮김
+	자주 사용될 라이브러리를 추가함 	#include<vector>, #include<memory> ....
+	pch.cpp 우클릭 -> 미리 컴파일된 헤더 -> 미리 컴파일된 헤더 "만들기"으로 변경 (pch.cpp만 Pre-Compilated 해제시킴)
+	Client.cpp에 #include "pch.h" 전처리기 추가
+
+<Game>
+1. Client -> 우클릭 - > 추가 -> 클래스 -> 클래스명으로 Game으로 생성
+2. Init() 생성
+	기본적으로 초기화할 내용 작성
+3. Tick() 생성
+	Frame마다 업데이트할 내용 작성
+
+
+[Engine 라이브러리]
+: 별도의 라이브러리로 생성하면 따른 게임에서 사용할때 코드를 하나하나 옮기지 않고 라이브러리 전체를 옮겨서 사용할 수 있음 -> 사용성이 높아짐
+
+<Engine>
+1. 솔루션 클릭 -> 추가 -> 새 프로젝트 -> 정적 라이브러리 -> 프로젝트 이름 "Engine"으로 설정 -> 생성
+	적 라이브러리 : Client 실행 파일이 실행될 때 외부 라이브러리로 가져다 사용함
+	적 라이브러리 : Client 실행 파일에 같이 패키지(내장)되어 있음
+2. Engine, Resource, Utils이라는 폴더 생성 -> 모든 기본으로 생성된 파일을 Utils폴더로 옮김. -> 헤더파일, 리소스, 소스파일 폴더 제거
+3. Engine.cpp 우클릭 -> 제거 -> 삭제
+4. framework.h에 있는 내용을 잘라내기 -> pch.h에 붙어넣기 -> pch.h에 있는 #include "framework.h" 제거 -> framework.h 파일 우클릭 -> 제거 -> 삭제
+5. Utils 폴더 우클릭 -> 추가 -> 클래스 -> 클래스명을 EnginePch으로 생성 -> Utils 폴더에 옮김 -> pch.h에 #include "EnginePch.h" 추가
+	EnginePch : Engine과 Client을 연결해서 Client에서 Engine의 코드를 사용할수있도록 함
+	EnginePch에 각종 라이브러리를 추가함.
+		라이브러리중 d3dx12는 비공식 지원 라이브러리이기 때문에 따로 추가해야함 : 타이핑하는것을 좀더 최적화 해주는 편의성 기능
+			-> 다운로드 이후 윈도우 탐색기에 Engine 솔루션 경로에 추가 -> 윈도우 탐색기에서 d3d12.h파일을 드래그해서 VS2022의 Engine-Utils폴더에 드롭함
+d3dx12.h 주소 : https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Libraries/D3D12RaytracingFallback/Include/d3dx12.h
+
+<Output>
+윈도우 탐색기에서  sln파일이 있는 위치에 Output이라는 새 폴더 추가
+Engine 솔루션 -> 우클릭 -> 속성
+	속성 창의 상단에 구성 : "모든 구성", 플랫폼 :  "모든 플랫폼"
+	속성 창 좌측에 구성 속성 -> 일반 -> 출력 디텍터리 -> $(SolutionDir)Output\으로 변경 혹은 찾아보기에서 직접 설정
+Client 솔루션 -> 우클릭 -> 속성
+	속성 창의 상단에 구성 : "모든 구성", 플랫폼 :  "모든 플랫폼"
+	속성 창 좌측에 구성 속성 -> 일반 -> 출력 디텍터리 -> $(SolutionDir)Output\으로 변경 혹은 찾아보기에서 직접 설정
+
+<Client - Engine 연결>
+: Client에게 EnginePch.h와 Engie.lib의 존재와 경로를 알려줘야함
+1. Client 솔루션 -> 우클릭 -> 구성 속성 -> VC++ 디텍터리 -> 
+	포함 디렉터리(pch.h) -> 편집 -> $(Solution)Engine\ 추가 (상대적인 주소)
+	라이브러리 디렉터리(lib) -> 편집 -> &(Solution)Output\ 추가 (상대적 주소)
+2. Client의 pch.h에 #include "EnginePch.h"  전처리기 추가
+3. Client 솔루션 -> 우클릭 -> 구성 속성 -> 링커 -> 입력 -> 추가 종속성 -> 편집 -> Engine.lib 추가
+  	혹은 Client의 pch.h 에서 #include "EnginePch.h"이전에 #pragma comment(lib, "Engine.lib")를 추가함
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
