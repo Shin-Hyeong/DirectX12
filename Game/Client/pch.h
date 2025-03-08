@@ -16,12 +16,10 @@
 // 솔루션 우클릭 -> 속성 -> 상단에 구성(모든 구성), 플랫폼(모든 플랫폼)으로 설정
 // pch.cpp 우클릭 -> 속성 -> 구성 속성 - C/C++ - 미리 컴파일된 헤더 -> 미리 컴파일된 헤더(만들기)
 
-// #include <vector> -> EnginePch.h에서 선언됨
-// #include <memory> -> EnginePch.h에서 선언됨
-
 // Engine
 #include "EnginePch.h"
 
-
+// #include <vector> -> EnginePch.h에서 선언됨
+// #include <memory> -> EnginePch.h에서 선언됨
 // typedef 
 // using namespace std; -> EnginePch.h에서 선언됨

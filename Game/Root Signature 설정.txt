@@ -1,0 +1,41 @@
+Root Signature
+- 특정 Register에 어떤 데이터를 가키게 할 것인가, 어떻게 활용하겠다. Root Table 형태로 이루어짐
+- API Bind Slot : 외부 코드에서 N번 Root Table에 데이터를 넣어줄지 지칭하기 위함
+- Descriptor : 어떠한 용도로 사용할지 서술
+- HLSL Bind Slot : register의 이름, 용도에 따라 이름이 달라짐
+
+[Empty Root Signature]
+- 간단한 테스트, 정말 간단한 명령, 작업을 시키지 않을 때 사용하면 유용함
+- Rendering Pass와 Descriptor(View , Description Heap) 없이 픽셀 셰이더를 사용할 수 있음.
+
+[Root Constant Buffer]
+- Root Descriptor : ptr처럼 다른 resource를 가르키는 view같은 개념. 실제 Constant Buffer의 내용은 따로 있지만 Constant Buffer의 위치를 알려줌
+
+[Binding Descriptor Table]
+- Descriptor 위치에 Root Table 형태로도 넣을 수 있음.
+- 1번 Root Table과 2번 Root Table이 있을 때 하나를 선택하게 되면 선택한 Root Table이 가르키는 Register들이 활성화 됨
+- 굳이 하나의 Root Table에 연속으로 할당하지 않고 따로 Root Table로 빼서 이중으로 접근하도록 하는 이유
+	1. RootTable의 크기가 한정되어 있음 (64 DWORD(4byte))
+	2. 너무 크게 사용하면 성능에 악영향이 있음
+
+[Set]
+Root Signature을 설정 이후 commandQueue의 RenderBegin()에서 Root Signature를 설정해줘야한다.
+
+
+[Command Queue 사용 주의점]
+Render Pipeline과정에서 GPU에게 데이터를 전달하기 위해선
+1.  GPU의 메모리에 저장할 공간을 할당받음
+2. 할당 받은 메모리에 Buffer(View)를 전달해서 저장함 (명령이 생기면 바로 실행함)
+3. CommandQueue에 Root Signature와 각종 명령을 전달함. 이 과정에서 명령이 생길때마다 전달하지 않고 일정량을 모아서 전달함 (명령이 생겨도 바로 실행하지 않고 기다림)
+4. CommandQueue가 전달되면 Root Signature을 통해 사용할 Register를 지정하고 어떻게 사용할지 설정함
+CPU의 메모리에서 GPU의 메모리로 데이터를 전송하는 것은 GPU에서 바로 실행됨.
+GPU의 메모리에서 사용할 Register를 선택하고 데이터를 전송하는 것은 CommandQueue를 통해 일어나기 때문에 기다렸다가 일괄적으로 실행됨
+만약 2개의 삼각형을 만들라고 명령을 내리면
+1. 즉시 실행으로 Buffer에 1번 삼각형 데이터가 전달됨.
+2. CommandQueue가 전달될때 까지 기다림
+3. CommandQueue 기다리는 과정에서 2번 삼각형 데이터가 Buffer에 전달되면서 1번 삼각형의 데이터가 덮어씌워짐.
+4. CommandQueue 전달되면 1번 삼각형을 그리라고 지정된 Register가 2번 삼각형 데이터가 있는 Buffer에 접근하는 오류가 발생
+
+이런 상황에선 Buffer를 필요한 만큼 생성해서 데이터를 전달한다
+1번 Buffer에 1번 삼각형의 데이터를 전달 -> b1 Register가 1번 Buffer를 참조
+2번 Buffer에 2번 삼각형의 데이터를 전달 -> b2 Register가 2번 Buffer를 참조

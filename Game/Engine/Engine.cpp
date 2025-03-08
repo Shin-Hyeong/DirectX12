@@ -3,6 +3,7 @@
 #include "Device.h"
 #include "CommandQueue.h"
 #include "SwapChain.h"
+#include "ConstantBuffer.h"
 
 void Engine::Init(const WindowInfo& info)
 {
@@ -22,6 +23,7 @@ void Engine::Init(const WindowInfo& info)
 	_cmdQueue = make_shared<CommandQueue>();
 	_swapChain = make_shared<SwapChain>();
 	_signature = make_shared<RootSignature>();
+	_constantBuffer = make_shared<ConstantBuffer>();
 
 	// class 초기화
 	// GPU설정, 디스플레이 화면 설정
@@ -32,6 +34,10 @@ void Engine::Init(const WindowInfo& info)
 	_swapChain->Init(info, _device->GetDevice(), _device->GetDXGI(), _cmdQueue->GetCmdQueue());
 	// GPU에 명령(외주) 보낼때 사용될 기본적인 계약서 생성
 	_signature->Init(_device->GetDevice());
+	// GPU의 메모리에 Buffer 공간 할당 및 데이터 전달
+	// Root Signature를 통해 Buffer와 Register 연결
+	// 보통 위치 정보를 넘겨주기 위함이기 때문에 Transform 사이즈로 Buffer를 생성함
+	_constantBuffer->Init(sizeof(Transform), 256);
 }
 
 void Engine::Render()

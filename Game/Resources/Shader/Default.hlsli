@@ -1,5 +1,17 @@
 // C++이 아닌 Shader 문법을 사용해야함
 
+// cbuffer : Constant Buffer
+cbuffer TEST_BO : register(b0) // Constant Buffer를 사용하기 위해 register b0을 사용
+{
+    // 외부에서 offset 값을 설정해주도록 함
+    float4 offset0;
+}
+
+cbuffer TEST_B1 : register(b1) // Constant Buffer를 사용하기 위해 register b1을 사용
+{
+    float4 offset1;
+}
+
 struct VS_IN
 {
     // float3 : (float, float, float)
@@ -22,7 +34,9 @@ VS_OUT VS_Main(VS_IN input)
 
     // (input.pos, 1.f)으로 float4으로 바꾸고 output.pos에 저장함
     output.pos = float4(input.pos, 1.f);
+    output.pos += offset0;      // 설정된 offset만큼 변화를 줌
     output.color = input.color;
+    output.color += offset1;    // 설정된 offset만큼 변화를 줌
 
     return output;
 }

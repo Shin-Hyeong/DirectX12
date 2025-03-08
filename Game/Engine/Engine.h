@@ -12,10 +12,12 @@
 #include "RootSignature.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "ConstantBuffer.h"
 
 class Device;
 class CommandQueue;
 class SwapChain;
+class ConstantBuffer;
 
 class Engine
 {
@@ -38,6 +40,7 @@ public:	// Get / Set
 	shared_ptr<CommandQueue> GetCmdQueue() { return _cmdQueue; }
 	shared_ptr<SwapChain> GetSwapChain() { return _swapChain; }
 	shared_ptr<RootSignature> GetRootSignature() { return _signature; }
+	shared_ptr<ConstantBuffer> GetConstantBuffer() { return _constantBuffer; }
 	
 private:
 	// 그려질 화면 크기 관련
@@ -54,5 +57,8 @@ private:
 	shared_ptr<SwapChain>			_swapChain;
 	// GPU에 명령에 대한 데이터 공간 할당, 등
 	shared_ptr<RootSignature>		_signature;
+	// GPU의 메모리에 Buffer 공간 할당 및 데이터 전달
+	// Root Signature를 통해 Buffer와 Register 연결
+	shared_ptr<ConstantBuffer>		_constantBuffer;
 };
 

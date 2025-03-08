@@ -15,13 +15,15 @@ void Mesh::Init(vector<Vertex>& vec)
 	// - UPLOAD는 GPU에 전달하고 DEFAULT에 복사해서 GPU가 DEFAULT를 참고하여 활용해야함
 	// - 문서에 따라 UPLOAD을 GPU에 전달하고 GPU가 UPLOAD를 참고해서 활용하는 2개의 역할로 사용하기도 함
 	// - 해당 코드는 2개의 역할을 공용으로 사용함
+	// Mesh 중 변하지 않는 Mesh(나무, 돌, 등)은 타입을 Default로 하는 것이 좋음
 	D3D12_HEAP_PROPERTIES heapProperty = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	// Buffer에 할당될 크기
 	D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
 
 	// GPU에 전달할 Buffer를 GPU 메모리에 저장하기 위하여 메모리 할당을 요청함
 	// - GPU 메모리에 정점 데이터를 저장(복사)하기 위함
-	//
+	// cmdQueue를 통해서 작업이 진행되지 않고 GPU를 통해 작업이 진행됨.
+	//		-> 즉시 진행됨(cmdQueue처럼 기다리지 않고 바로 진행)
 	// _vertexBuffer 생성
 	DEVICE->CreateCommittedResource(
 		&heapProperty,
@@ -55,6 +57,7 @@ void Mesh::Init(vector<Vertex>& vec)
 
 // 실질적으로 활용할땐 View를 통해 전달하게 됨
 // _cmdQueue의 RenderBegin()과 RenderEnd()의 사이에 실행됨
+// Game.cpp -> Tick()에서 호출됨.
 void Mesh::Render()
 {
 	// 정점들이 어떠한 형태로 연결되어 있는지
@@ -63,6 +66,18 @@ void Mesh::Render()
 	// Slot이랑 여러가지 정보를 설정할 수 있음
 	// Slot: (0~15), 현재 0번으로 설정되어 있음
 	CMD_LIST->IASetVertexBuffers(0, 1, &_vertexBufferView);
+
+	// TODO
+	// Root Signature의 내용 채워넣기
+	// 1. GPU 메모리에 있는 Buffer에다가 데이터 저장(즉시 실행) -> Mesh->Init()에서 이루어짐
+	// 2. Buffer의 주소를 Register에 전송(기다렸다가 실행) -> cmdQueue를 통해 이루어짐
+	// D3D12_GPU_VIRTUAL_ADDRESS : Buffer가 있는 주소를 받음
+	// CMD_LIST->SetGraphicsRootConstantBufferView(0, ); -> ConstantBuffer를 통해 진행
+	// _transform의 데이터를 임시 버퍼(ConstantBuffer의 _mappedBuffer)에 전달함
+	GEngine->GetConstantBuffer()->PushData(0, &_transform, sizeof(_transform));
+	// 테스트로 동일한 좌표로 다른 Buffer에도 전달함
+	GEngine->GetConstantBuffer()->PushData(1, &_transform, sizeof(_transform));
+
 	// 정점을 그리도록 예약
 	// CmdQueue의 RenderEnd()를 통해 작업이 시작됨
 	CMD_LIST->DrawInstanced(_vertexCount, 1, 0, 0);

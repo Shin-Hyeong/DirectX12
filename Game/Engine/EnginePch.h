@@ -76,5 +76,10 @@ struct Vertex
 	Vec4	color;  // (R, G, B, A)
 };
 
+struct Transform
+{
+	Vec4 offset;
+};
+
 // class Engine을 Client(다른 class)에서 사용하기 위한 extern 전역 변수로 선언함
 extern unique_ptr<class Engine> GEngine;

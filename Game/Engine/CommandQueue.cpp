@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CommandQueue.h"
 #include "SwapChain.h"
+#include "Engine.h"
 
 CommandQueue::~CommandQueue()
 {	
@@ -83,6 +84,11 @@ void CommandQueue::RenderBegin(const D3D12_VIEWPORT* vp, const D3D12_RECT* rect)
 		_swapChain->GetBackRTVBuffer().Get(), // 후면(GPU에서 작업중 인) Buffer를 가져옴
 		D3D12_RESOURCE_STATE_PRESENT, // 화면 출력
 		D3D12_RESOURCE_STATE_RENDER_TARGET); // 렌더링 결과물
+
+	// Root Signature를 적용시킴
+	_cmdList->SetGraphicsRootSignature(ROOT_SIGNATURE.Get());
+	// Buffer를 0번 인덱스부터 다시 Write하도록 함
+	GEngine->GetConstantBuffer()->Clear();
 
 	// Barrier형태로 만들어진 결과물을 _cmdList에 저장함
 	_cmdList->ResourceBarrier(1, &barrier);

@@ -5,6 +5,7 @@ class DescriptorHeap;
 
 // DirectX 9 시절에는 Device를 통해서 바로 그래픽카드에 요청을 하면 되었음
 // DirectX 12로 오면서 CommandQueue과정이 추가됨.
+// GPU에게 명령을 할떄 명령이 생길때마다 보내는 것이 아닌 Queue에 한번에 모아서 일괄로 보냄
 // https://learn.microsoft.com/ko-kr/windows/win32/direct3d12/design-philosophy-of-command-queues-and-command-lists
 
 class CommandQueue
@@ -30,7 +31,7 @@ private:
 	// COM(Component Object Model)
 	// - DX의 프로그래밍 언어 독립성과 하위 호환성을 가능하게 하는 기술
 	// - COM 객체(COM 인터페이스)를 사용. 세부사항은 우리한테 숨겨짐
-	// - ComPtr : Com객체를 받아주는  일종의 스마트 포인터
+	// - ComPtr : Com객체를 받아주는  일종의 스마트 포인터(GPU쪽 데이터)
 	// -- shared_ptr은 DiretX에서 함수 파라미터로 요구하는 Double Pointer를 매개변수로
 	//	  전달하기 어려움이 있어 ComPtr을 사용해야한다.
 	// - ComPtr로 되어 있으면 GPU에게 무언가를 요청하는 것이고 GPU내에서 실질적 객체가 생성됨

@@ -39,7 +39,26 @@ void Game::Tick()
 	GEngine->RenderBegin();
 
 	shader->Update();
-	mesh->Render();
+
+	{
+		Transform t;
+		// Shader의 Offset1과 Offset2에 적용됨
+		// x좌표로 0.75만큼 이동하고 R값을 0.75증가시킴
+		t.offset = Vec4(0.75f, 0.f, 0.f, 0.f);
+		mesh->SetTransform(t);
+
+		mesh->Render();
+	}
+
+	{
+		Transform t;
+		// Shader의 Offset1과 Offset2에 적용됨
+		// Y좌표로 0.75만큼 이동하고 G값을 0.75증가시킴
+		t.offset = Vec4(0.f, 0.75f, 0.f, 0.f);
+		mesh->SetTransform(t);
+
+		mesh->Render();
+	}
 
 	GEngine->RenderEnd();
 }
